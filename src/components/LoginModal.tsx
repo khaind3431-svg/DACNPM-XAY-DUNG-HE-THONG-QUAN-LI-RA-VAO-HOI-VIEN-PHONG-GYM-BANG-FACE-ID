@@ -10,7 +10,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
-import { AuthUser, loginWithCredentials } from '../utils/auth';
+import { AuthUser, loginWithCredentials, MAX_ADMIN_COUNT } from '../utils/auth';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -51,9 +51,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
-  // Quick 1-click login for demonstration / defense
-  const handleQuickLogin = async (role: 'ADMIN' | 'STAFF') => {
-    const acc = role === 'ADMIN' ? { u: 'admin', p: 'admin123' } : { u: 'staff01', p: 'admin123' };
+  // Quick 1-click login for demonstration / defense with fixed 2 admins
+  const handleQuickLogin = async (targetUser: 'admin1' | 'admin2' | 'staff01') => {
+    const acc = {
+      admin1: { u: 'admin1', p: 'admin123' },
+      admin2: { u: 'admin2', p: 'admin123' },
+      staff01: { u: 'staff01', p: 'admin123' },
+    }[targetUser];
+
     setUsername(acc.u);
     setPassword(acc.p);
     setIsLoading(true);
@@ -97,56 +102,78 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             Đăng Nhập Quản Trị Hệ Thống
           </h2>
           <p className="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
-            Hệ thống phân quyền TitanFit Biometrics dành cho Nhân Viên Lễ Tân & Quản Trị Viên
+            Chính sách Dual-Admin: Giới hạn tối đa đúng {MAX_ADMIN_COUNT} Quản Trị Viên & Nhân Viên Lễ Tân
           </p>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-4">
           {/* Quick Demo Login Buttons */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
               <span className="flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span>Đăng nhập nhanh 1-Click (Demo đồ án):</span>
+                <span>Đăng nhập 1-Click (Demo đồ án):</span>
+              </span>
+              <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200">
+                Tối đa 2 Admin
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* 2 Admins side-by-side */}
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => handleQuickLogin('ADMIN')}
+                onClick={() => handleQuickLogin('admin1')}
                 className="p-2.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-left transition-all hover:shadow-xs group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-purple-900 flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-                    Quản Trị Viên
+                    Admin 1 (Trưởng)
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.5 bg-purple-200 text-purple-800 rounded font-mono font-bold">
-                    ADMIN
+                  <span className="text-[9px] px-1.5 py-0.5 bg-purple-200 text-purple-900 rounded font-mono font-bold">
+                    ADMIN 1
                   </span>
                 </div>
-                <p className="text-[10px] text-purple-700 mt-1">Toàn quyền hệ thống</p>
+                <p className="text-[10px] text-purple-700 mt-1">admin1 · Toàn quyền</p>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleQuickLogin('STAFF')}
-                className="p-2.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl text-left transition-all hover:shadow-xs group cursor-pointer"
+                onClick={() => handleQuickLogin('admin2')}
+                className="p-2.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-left transition-all hover:shadow-xs group cursor-pointer"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-blue-900 flex items-center gap-1">
-                    <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-                    Lễ Tân / Quầy
+                  <span className="text-[11px] font-bold text-purple-900 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                    Admin 2 (Phó)
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.5 bg-blue-200 text-blue-800 rounded font-mono font-bold">
-                    STAFF
+                  <span className="text-[9px] px-1.5 py-0.5 bg-purple-200 text-purple-900 rounded font-mono font-bold">
+                    ADMIN 2
                   </span>
                 </div>
-                <p className="text-[10px] text-blue-700 mt-1">Đăng ký & Quét cổng</p>
+                <p className="text-[10px] text-purple-700 mt-1">admin2 · Toàn quyền</p>
               </button>
             </div>
+
+            {/* Staff Button */}
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('staff01')}
+              className="w-full p-2.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl text-left transition-all hover:shadow-xs group cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-blue-900 flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+                  Nhân Viên Lễ Tân (staff01)
+                </span>
+                <span className="text-[10px] px-2 py-0.5 bg-blue-200 text-blue-800 rounded font-mono font-bold">
+                  STAFF
+                </span>
+              </div>
+              <p className="text-[10px] text-blue-700 mt-0.5">Tiếp đón khách, đăng ký hội viên & chụp quét Face ID</p>
+            </button>
           </div>
 
           <div className="relative flex items-center justify-center">
@@ -165,7 +192,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3.5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label htmlFor="login-username" className="block text-xs font-semibold text-slate-700 mb-1">
                 Tên đăng nhập
@@ -179,7 +206,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin hoặc staff01"
+                  placeholder="admin1, admin2 hoặc staff01"
                   className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
                 />
               </div>
@@ -222,10 +249,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </form>
 
           {/* Roles Policy Info Footer */}
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 space-y-1">
-            <p className="font-semibold text-slate-700">Quyền hạn hệ thống:</p>
-            <p>• <strong>ADMIN</strong>: Toàn quyền thêm hội viên, quản lý cấu hình gói tập & doanh thu.</p>
-            <p>• <strong>STAFF</strong>: Đăng ký hội viên mới, gia hạn thẻ tập, giám sát cổng ra vào.</p>
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-slate-700">Chính sách bảo mật tài khoản:</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded font-medium border border-amber-200">
+                Chỉ 2 Admin
+              </span>
+            </div>
+            <p>• <strong>ADMIN (Cố định duy nhất 2 tài khoản: admin1 & admin2)</strong>: Toàn quyền cấu hình, phê duyệt thành viên và giám sát doanh thu tài chính.</p>
+            <p>• <strong>STAFF (Lễ tân quầy)</strong>: Tiếp đón khách tập, hỗ trợ thu thập sinh trắc học Face ID và quản lý lượt ra vào.</p>
           </div>
         </div>
       </div>

@@ -58,8 +58,11 @@ export default function App() {
 
   const handleLoginSuccess = (user: AuthUser) => {
     setCurrentUser(user);
+    const roleTitle = user.role === 'ADMIN'
+      ? (user.adminIndex ? `Quản Trị Viên ${user.adminIndex}` : 'Quản Trị Viên')
+      : 'Nhân Viên Lễ Tân';
     showNotification(
-      `Đăng nhập thành công! Chào mừng ${user.fullName} (${user.role === 'ADMIN' ? 'Quản Trị Viên' : 'Nhân Viên Lễ Tân'}).`
+      `Đăng nhập thành công! Chào mừng ${user.fullName} (${roleTitle}).`
     );
   };
 
@@ -353,13 +356,15 @@ export default function App() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs">
                 {currentUser.role === 'ADMIN' ? (
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
                 ) : (
                   <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                 )}
                 <span className="font-semibold text-slate-800">{currentUser.fullName}</span>
-                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
-                  {currentUser.role === 'ADMIN' ? 'Admin' : 'Lễ Tân'}
+                <span className={`text-[10px] uppercase font-mono px-1.5 py-0.5 rounded font-bold ${
+                  currentUser.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  {currentUser.role === 'ADMIN' ? `Admin ${currentUser.adminIndex || ''}`.trim() : 'Lễ Tân'}
                 </span>
               </div>
               <button

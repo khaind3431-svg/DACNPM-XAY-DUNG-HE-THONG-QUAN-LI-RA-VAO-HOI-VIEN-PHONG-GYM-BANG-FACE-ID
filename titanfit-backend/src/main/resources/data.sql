@@ -4,13 +4,14 @@
 -- =====================================================
 
 -- -----------------------------------------------------
--- 1. Users — Tài khoản hệ thống
+-- 1. Users — Tài khoản hệ thống (Giới hạn tối đa đúng 02 Admin)
 -- Mật khẩu mặc định: admin123 (BCrypt hash)
 -- -----------------------------------------------------
 INSERT IGNORE INTO users (id, username, password_hash, full_name, email, role, is_active, created_at) VALUES
-(1, 'admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Quản Trị Viên', 'admin@titanfit.vn', 'ADMIN', true, '2026-01-01 00:00:00'),
-(2, 'staff01', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Nhân Viên Lễ Tân', 'staff01@titanfit.vn', 'STAFF', true, '2026-01-15 00:00:00'),
-(3, 'gate_terminal', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Trạm Cổng Tự Động', 'gate@titanfit.vn', 'STAFF', true, '2026-01-15 00:00:00');
+(1, 'admin1', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Quản Trị Viên 1 (Trưởng)', 'admin1@titanfit.vn', 'ADMIN', true, '2026-01-01 00:00:00'),
+(2, 'admin2', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Quản Trị Viên 2 (Phó)', 'admin2@titanfit.vn', 'ADMIN', true, '2026-01-02 00:00:00'),
+(3, 'staff01', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Nhân Viên Lễ Tân', 'staff01@titanfit.vn', 'STAFF', true, '2026-01-15 00:00:00'),
+(4, 'gate_terminal', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Trạm Cổng Tự Động', 'gate@titanfit.vn', 'STAFF', true, '2026-01-15 00:00:00');
 
 -- -----------------------------------------------------
 -- 2. Packages — Gói tập gym mặc định

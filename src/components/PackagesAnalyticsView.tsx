@@ -74,9 +74,11 @@ export const PackagesAnalyticsView: React.FC<PackagesAnalyticsViewProps> = ({
               <Crown className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-bold text-sm">Chế độ Quản Trị Viên (ADMIN) — Quản lý danh mục & phân tích doanh thu</p>
+              <p className="font-bold text-sm">
+                Chế độ {currentUser?.adminIndex ? `Quản Trị Viên ${currentUser.adminIndex}` : 'Quản Trị Viên'} (ADMIN) — Quản lý danh mục & phân tích doanh thu
+              </p>
               <p className="text-purple-700">
-                Hiển thị đầy đủ báo cáo doanh thu theo gói, bảng ma trận quyền lợi và tỷ lệ chuyển đổi hội viên.
+                Chính sách Dual-Admin: Cố định 2 tài khoản Quản trị viên · Báo cáo doanh thu theo gói, bảng ma trận quyền lợi và tỷ lệ chuyển đổi hội viên.
               </p>
             </div>
           </div>

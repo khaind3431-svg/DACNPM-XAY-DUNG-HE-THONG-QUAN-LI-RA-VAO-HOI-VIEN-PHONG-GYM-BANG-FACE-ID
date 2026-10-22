@@ -83,6 +83,14 @@ public class AuthService {
             throw new BusinessLogicException("Vai trò không hợp lệ: " + request.getRole());
         }
 
+        // Chính sách an ninh: Giới hạn tối đa đúng 2 tài khoản Quản Trị Viên (Admin)
+        if (role == UserRole.ADMIN) {
+            Long currentAdminCount = userRepository.countByRole(UserRole.ADMIN);
+            if (currentAdminCount != null && currentAdminCount >= 2) {
+                throw new BusinessLogicException("Hệ thống chỉ cho phép tối đa 2 tài khoản Quản Trị Viên (Admin). Đã đạt giới hạn tối đa (2/2)!");
+            }
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
