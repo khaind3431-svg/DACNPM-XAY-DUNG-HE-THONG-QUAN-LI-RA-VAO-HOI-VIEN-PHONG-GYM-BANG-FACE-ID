@@ -1,0 +1,6 @@
+{
+  "name": "TitanFit Biometrics — Hệ Thống Quản Lý Hội Viên & Kiểm Soát Ra Vào Khuôn Mặt",
+  "description": "Hệ thống quản lý phòng gym chuyên nghiệp tích hợp nhận diện khuôn mặt 128-D (Face ID), kiểm soát cổng xoay tự động, quản lý gói tập và nhật ký ra vào thời gian thực.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

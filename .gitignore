@@ -1,0 +1,29 @@
+# Node / Frontend
+node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Java / Spring Boot Backend
+titanfit-backend/target/
+titanfit-backend/*.jar
+titanfit-backend/*.war
+titanfit-backend/*.class
+titanfit-backend/.mvn/
+titanfit-backend/mvnw
+titanfit-backend/mvnw.cmd
+
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
