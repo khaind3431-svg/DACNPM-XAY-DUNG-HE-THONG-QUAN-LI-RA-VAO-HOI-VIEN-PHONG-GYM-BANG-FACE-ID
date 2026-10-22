@@ -15,6 +15,15 @@ import { GateTerminalView } from './components/GateTerminalView';
 import { MemberDirectoryView } from './components/MemberDirectoryView';
 import { AccessLogsView } from './components/AccessLogsView';
 import { PackagesAnalyticsView } from './components/PackagesAnalyticsView';
+import { LoginModal } from './components/LoginModal';
+import { AuthUser, getStoredUser, logoutUser } from './utils/auth';
+import {
+  ShieldCheck,
+  UserCheck,
+  LogOut,
+  KeyRound,
+  Lock,
+} from 'lucide-react';
 import {
   AddMemberModal,
   FaceEnrollmentModal,
@@ -32,6 +41,8 @@ export default function App() {
 
   // Modals state
   const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getStoredUser());
   const [preselectedPkgId, setPreselectedPkgId] = useState<string | undefined>(undefined);
   const [pendingOpticalFace, setPendingOpticalFace] = useState<{
     vector: number[];
@@ -43,6 +54,32 @@ export default function App() {
 
   const showNotification = (msg: string) => {
     setBannerMessage(msg);
+  };
+
+  const handleLoginSuccess = (user: AuthUser) => {
+    setCurrentUser(user);
+    showNotification(
+      `Đăng nhập thành công! Chào mừng ${user.fullName} (${user.role === 'ADMIN' ? 'Quản Trị Viên' : 'Nhân Viên Lễ Tân'}).`
+    );
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setCurrentUser(null);
+    showNotification('Đã đăng xuất khỏi hệ thống.');
+    if (activeTab === 'members' || activeTab === 'logs') {
+      setActiveTab('gate');
+    }
+  };
+
+  const handleTriggerAddMember = (targetPkgId?: string) => {
+    if (!currentUser) {
+      showNotification('Yêu cầu quyền hạn: Vui lòng đăng nhập tài khoản Nhân Viên hoặc Quản Trị Viên để thực hiện đăng ký hội viên!');
+      setIsLoginModalOpen(true);
+      return;
+    }
+    setPreselectedPkgId(targetPkgId);
+    setIsAddMemberOpen(true);
   };
 
   // Record a gate scan event and update member check-in count / occupancy
@@ -310,17 +347,48 @@ export default function App() {
           </button>
         </nav>
 
-        {/* Zone 3: 1 primary action */}
+        {/* Zone 3: Auth & Action */}
         <div className="flex items-center gap-3 shrink-0">
+          {currentUser ? (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-full text-xs">
+                {currentUser.role === 'ADMIN' ? (
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                ) : (
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                )}
+                <span className="font-semibold text-slate-800">{currentUser.fullName}</span>
+                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">
+                  {currentUser.role === 'ADMIN' ? 'Admin' : 'Lễ Tân'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Đăng xuất khỏi phiên làm việc"
+                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsLoginModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-slate-500" />
+              <span>Đăng Nhập Quản Trị</span>
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={() => {
-              setPreselectedPkgId(undefined);
-              setIsAddMemberOpen(true);
-            }}
-            className="px-4 py-2 text-xs font-semibold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            onClick={() => handleTriggerAddMember()}
+            className="px-4 py-2 text-xs font-semibold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-1.5 shadow-sm"
           >
-            Đăng Ký Hội Viên
+            {!currentUser && <Lock className="w-3 h-3 text-slate-400" />}
+            <span>Đăng Ký Hội Viên</span>
           </button>
         </div>
       </header>
@@ -499,12 +567,36 @@ export default function App() {
             selectedSubjectId={selectedGateSubjectId}
             onSelectSubject={(id) => setSelectedGateSubjectId(id)}
             onRecordGateScan={handleRecordGateScan}
-            onOpenEnrollModal={(member) => setEnrollingMember(member)}
-            onOpenRenewModal={(member) => setRenewingMember(member)}
+            onOpenEnrollModal={(member) => {
+              if (!currentUser) {
+                showNotification('Yêu cầu quyền hạn: Vui lòng đăng nhập để thu thập Face ID!');
+                setIsLoginModalOpen(true);
+                return;
+              }
+              setEnrollingMember(member);
+            }}
+            onOpenRenewModal={(member) => {
+              if (!currentUser) {
+                showNotification('Yêu cầu quyền hạn: Vui lòng đăng nhập để gia hạn gói tập!');
+                setIsLoginModalOpen(true);
+                return;
+              }
+              setRenewingMember(member);
+            }}
             onQuickBindOpticalFace={(memberId, opticalVector, qualityScore, snapshotUrl) => {
+              if (!currentUser) {
+                showNotification('Yêu cầu quyền hạn: Vui lòng đăng nhập để liên kết khuôn mặt!');
+                setIsLoginModalOpen(true);
+                return;
+              }
               handleConfirmEnroll(memberId, opticalVector, qualityScore, 'optical_pixel', snapshotUrl);
             }}
             onOpenAddMemberWithOpticalFace={(opticalVector, snapshotUrl) => {
+              if (!currentUser) {
+                showNotification('Yêu cầu quyền hạn: Vui lòng đăng nhập để đăng ký hội viên từ camera!');
+                setIsLoginModalOpen(true);
+                return;
+              }
               setPendingOpticalFace({ vector: opticalVector, snapshotUrl });
               setPreselectedPkgId(undefined);
               setIsAddMemberOpen(true);
@@ -514,33 +606,93 @@ export default function App() {
         )}
 
         {activeTab === 'members' && (
-          <MemberDirectoryView
-            members={members}
-            onOpenAddMember={() => {
-              setPendingOpticalFace(null);
-              setPreselectedPkgId(undefined);
-              setIsAddMemberOpen(true);
-            }}
-            onOpenEnrollModal={(member) => setEnrollingMember(member)}
-            onOpenRenewModal={(member) => setRenewingMember(member)}
-            onToggleFreezeMember={handleToggleFreezeMember}
-            onSendToGateScanner={(memberId) => {
-              setSelectedGateSubjectId(memberId);
-              setActiveTab('gate');
-            }}
-          />
+          currentUser ? (
+            <MemberDirectoryView
+              members={members}
+              onOpenAddMember={() => {
+                setPendingOpticalFace(null);
+                setPreselectedPkgId(undefined);
+                setIsAddMemberOpen(true);
+              }}
+              onOpenEnrollModal={(member) => setEnrollingMember(member)}
+              onOpenRenewModal={(member) => setRenewingMember(member)}
+              onToggleFreezeMember={handleToggleFreezeMember}
+              onSendToGateScanner={(memberId) => {
+                setSelectedGateSubjectId(memberId);
+                setActiveTab('gate');
+              }}
+            />
+          ) : (
+            <div className="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center max-w-xl mx-auto my-8 shadow-sm">
+              <div className="w-14 h-14 bg-amber-50 border border-amber-200 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Lock className="w-7 h-7" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">Khu Vực Quản Trị Hội Viên Bảo Mật</h2>
+              <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                Hồ sơ thông tin cá nhân và dữ liệu sinh trắc học Face ID được bảo mật theo quy định an toàn thông tin. Vui lòng đăng nhập với tài khoản <strong>Admin</strong> hoặc <strong>Nhân Viên Lễ Tân</strong> để xem và quản lý danh sách hội viên.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>Đăng Nhập Quản Trị Ngay</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('gate')}
+                  className="w-full sm:w-auto px-4 py-2.5 text-slate-600 hover:text-slate-800 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Quay Lại Trạm Cổng Soát Vé
+                </button>
+              </div>
+            </div>
+          )
         )}
 
-        {activeTab === 'logs' && <AccessLogsView accessLogs={accessLogs} />}
+        {activeTab === 'logs' && (
+          currentUser ? (
+            <AccessLogsView accessLogs={accessLogs} />
+          ) : (
+            <div className="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center max-w-xl mx-auto my-8 shadow-sm">
+              <div className="w-14 h-14 bg-blue-50 border border-blue-200 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">Nhật Ký An Ninh & Kiểm Soát Ra Vào</h2>
+              <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                Lịch sử quẹt mặt qua cổng và các cảnh báo từ chối truy cập chứa dữ liệu camera an ninh. Vui lòng đăng nhập với tư cách <strong>Admin</strong> hoặc <strong>Nhân Viên</strong> để tra cứu và xuất báo cáo.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>Đăng Nhập Để Xem Nhật Ký</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('gate')}
+                  className="w-full sm:w-auto px-4 py-2.5 text-slate-600 hover:text-slate-800 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Quay Lại Trạm Cổng Soát Vé
+                </button>
+              </div>
+            </div>
+          )
+        )}
 
         {activeTab === 'packages' && (
           <PackagesAnalyticsView
             packages={packages}
             members={members}
+            currentUser={currentUser}
+            onOpenLoginModal={() => setIsLoginModalOpen(true)}
             onSelectPackageForNewMember={(pkgId) => {
-              setPendingOpticalFace(null);
-              setPreselectedPkgId(pkgId);
-              setIsAddMemberOpen(true);
+              handleTriggerAddMember(pkgId);
             }}
           />
         )}
@@ -594,6 +746,12 @@ export default function App() {
         packages={packages}
         onClose={() => setRenewingMember(null)}
         onConfirmRenew={handleConfirmRenew}
+      />
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
       />
     </div>
   );
