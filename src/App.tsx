@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   INITIAL_MEMBERS,
   INITIAL_PACKAGES,
@@ -16,6 +16,7 @@ import { MemberDirectoryView } from './components/MemberDirectoryView';
 import { AccessLogsView } from './components/AccessLogsView';
 import { PackagesAnalyticsView } from './components/PackagesAnalyticsView';
 import { LoginModal } from './components/LoginModal';
+import { ResetDataModal } from './components/ResetDataModal';
 import { AuthUser, getStoredUser, logoutUser } from './utils/auth';
 import {
   ShieldCheck,
@@ -23,6 +24,7 @@ import {
   LogOut,
   KeyRound,
   Lock,
+  RotateCcw,
 } from 'lucide-react';
 import {
   AddMemberModal,
@@ -32,16 +34,49 @@ import {
 
 type ActiveTab = 'gate' | 'members' | 'logs' | 'packages';
 
+const STORAGE_KEY_MEMBERS = 'titanfit_gym_members_v2';
+const STORAGE_KEY_LOGS = 'titanfit_gym_access_logs_v2';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('gate');
-  const [members, setMembers] = useState<GymMember[]>(INITIAL_MEMBERS);
+  const [members, setMembers] = useState<GymMember[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_MEMBERS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi đọc dữ liệu hội viên từ LocalStorage:', err);
+    }
+    return INITIAL_MEMBERS;
+  });
+
   const [packages] = useState<GymPackage[]>(INITIAL_PACKAGES);
-  const [accessLogs, setAccessLogs] = useState<AccessLogEntry[]>(INITIAL_ACCESS_LOGS);
+
+  const [accessLogs, setAccessLogs] = useState<AccessLogEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_LOGS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('Lỗi đọc nhật ký từ LocalStorage:', err);
+    }
+    return INITIAL_ACCESS_LOGS;
+  });
+
   const [selectedGateSubjectId, setSelectedGateSubjectId] = useState<string>('preset-stranger');
 
   // Modals state
   const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getStoredUser());
   const [preselectedPkgId, setPreselectedPkgId] = useState<string | undefined>(undefined);
   const [pendingOpticalFace, setPendingOpticalFace] = useState<{
@@ -51,6 +86,52 @@ export default function App() {
   const [enrollingMember, setEnrollingMember] = useState<GymMember | null>(null);
   const [renewingMember, setRenewingMember] = useState<GymMember | null>(null);
   const [bannerMessage, setBannerMessage] = useState<string | null>(null);
+
+  // Tự động lưu trữ vĩnh viễn dữ liệu hội viên vào LocalStorage khi có bất kỳ thay đổi nào
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_MEMBERS, JSON.stringify(members));
+    } catch (err) {
+      console.error('Lỗi tự động lưu hội viên vào LocalStorage:', err);
+    }
+  }, [members]);
+
+  // Tự động lưu trữ vĩnh viễn nhật ký ra vào vào LocalStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(accessLogs));
+    } catch (err) {
+      console.error('Lỗi tự động lưu nhật ký vào LocalStorage:', err);
+    }
+  }, [accessLogs]);
+
+  // Khôi phục 7 hội viên mẫu chuẩn khi chuẩn bị nộp bài
+  const handleResetToDemoDefaults = () => {
+    setMembers(INITIAL_MEMBERS);
+    setAccessLogs(INITIAL_ACCESS_LOGS);
+    setSelectedGateSubjectId('preset-stranger');
+    try {
+      localStorage.setItem(STORAGE_KEY_MEMBERS, JSON.stringify(INITIAL_MEMBERS));
+      localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(INITIAL_ACCESS_LOGS));
+    } catch (e) {
+      console.error(e);
+    }
+    showNotification('Đã làm sạch dữ liệu và khôi phục 7 hội viên mẫu chuẩn. Sẵn sàng nộp đồ án cho giảng viên!');
+  };
+
+  // Làm sạch trắng hoàn toàn
+  const handleClearAllData = () => {
+    setMembers([]);
+    setAccessLogs([]);
+    setSelectedGateSubjectId('preset-stranger');
+    try {
+      localStorage.setItem(STORAGE_KEY_MEMBERS, JSON.stringify([]));
+      localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify([]));
+    } catch (e) {
+      console.error(e);
+    }
+    showNotification('Đã xóa trắng toàn bộ dữ liệu. Hệ thống hiện ở trạng thái 0 hội viên để nhập mới.');
+  };
 
   const showNotification = (msg: string) => {
     setBannerMessage(msg);
@@ -287,17 +368,26 @@ export default function App() {
     <div id="top" className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       {/* Strict 3-Zone Top Bar Contract */}
       <header className="flex items-center justify-between gap-8 px-6 py-4 bg-white border-b border-slate-200">
-        {/* Zone 1: Single text element wordmark */}
-        <a
-          href="#top"
-          onClick={(e) => {
-            e.preventDefault();
-            setActiveTab('gate');
-          }}
-          className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 font-display"
-        >
-          TitanFit Biometrics
-        </a>
+        {/* Zone 1: Single text element wordmark + Persistent Indicator */}
+        <div className="flex items-center gap-3 shrink-0">
+          <a
+            href="#top"
+            onClick={(e) => {
+              e.preventDefault();
+              setActiveTab('gate');
+            }}
+            className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap shrink-0 font-display"
+          >
+            TitanFit Biometrics
+          </a>
+          <span
+            className="hidden xl:inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-[10px] font-semibold"
+            title="Dữ liệu được lưu vĩnh viễn trên máy tính này (LocalStorage) — Tắt phần mềm không bị mất!"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Tự động lưu vĩnh viễn ({members.length})</span>
+          </span>
+        </div>
 
         {/* Zone 2: 4 concise single-line text navigation links */}
         <nav
@@ -706,21 +796,22 @@ export default function App() {
       {/* Clean Quiet Footer */}
       <footer className="mt-12 border-t border-slate-200 bg-white py-4 px-6">
         <div className="max-w-[1380px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <div>
-            TitanFit Biometrics — Hệ Thống Quản Lý Hội Viên & Kiểm Soát Ra Vào Khuôn Mặt
+          <div className="flex items-center gap-2">
+            <span>TitanFit Biometrics — Hệ Thống Quản Lý Hội Viên & Face ID</span>
+            <span className="hidden sm:inline text-slate-300">·</span>
+            <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span>Bộ nhớ máy: Đang lưu vĩnh viễn</span>
+            </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={() => {
-                setMembers(INITIAL_MEMBERS);
-                setAccessLogs(INITIAL_ACCESS_LOGS);
-                setSelectedGateSubjectId('preset-stranger');
-                showNotification('Đã làm mới dữ liệu.');
-              }}
-              className="text-slate-600 hover:text-slate-900 underline cursor-pointer"
+              onClick={() => setIsResetModalOpen(true)}
+              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
-              Khôi phục dữ liệu mẫu
+              <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+              <span>Làm sạch dữ liệu (Chuẩn bị nộp đồ án)</span>
             </button>
           </div>
         </div>
@@ -757,6 +848,15 @@ export default function App() {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      <ResetDataModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        currentMembersCount={members.length}
+        currentLogsCount={accessLogs.length}
+        onResetToDemoDefaults={handleResetToDemoDefaults}
+        onClearAllData={handleClearAllData}
       />
     </div>
   );
