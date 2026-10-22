@@ -59,7 +59,25 @@ npm run dev
 
 Mở trình duyệt truy cập: **`http://localhost:3000`**
 
-### 2. Chạy Backend (Spring Boot)
+### 2. Chạy Bằng Docker (1-Click Toàn Diện — Khuyên Dùng 🐳)
+
+Chỉ cần cài Docker Desktop và chạy đúng **1 câu lệnh** để tự động build và chạy cả 3 dịch vụ (MySQL + Backend + Frontend):
+
+```bash
+docker compose up --build -d
+```
+
+- **Frontend (Giao diện web)**: `http://localhost:3000`
+- **Backend (Spring Boot API)**: `http://localhost:8080`
+- **Tài liệu Swagger API**: `http://localhost:8080/swagger-ui.html`
+- **MySQL Database**: Cổng `3306` (user: `root`, pass: `root`, db: `titanfit_db`)
+
+Để dừng toàn bộ hệ thống:
+```bash
+docker compose down
+```
+
+### 3. Chạy Backend Thủ Công (Spring Boot)
 
 Yêu cầu máy đã cài **JDK 17+** và **MySQL Server 8.0**:
 
