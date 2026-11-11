@@ -93,6 +93,38 @@ mvn spring-boot:run
 
 ---
 
-## 👥 Tác Giả & Bản Quyền
-- **Sinh viên thực hiện**: Nguyễn Đức Khải
+## 🤝 Hướng Dẫn Làm Việc Nhóm (Git Workflow)
+
+> **Lưu ý:** Thành viên mới cần chấp nhận lời mời (**Accept invitation**) qua Email hoặc thông báo trên GitHub trước khi thực hiện `git push`.
+
+```bash
+# 1. Clone dự án về máy (chỉ làm lần đầu)
+git clone https://github.com/khaind3431-svg/DACNPM-XAY-DUNG-HE-THONG-QUAN-LI-RA-VAO-HOI-VIEN-PHONG-GYM-BANG-FACE-ID.git
+cd DACNPM-XAY-DUNG-HE-THONG-QUAN-LI-RA-VAO-HOI-VIEN-PHONG-GYM-BANG-FACE-ID
+npm install --legacy-peer-deps
+
+# 2. Tạo nhánh riêng cho phần việc của mình (tránh xung đột trên nhánh main)
+git checkout -b feature/ten-chuc-nang
+
+# 3. Lưu và đẩy code lên GitHub sau khi hoàn thành
+git add .
+git commit -m "feat: mo ta chuc nang da thuc hien"
+git push origin feature/ten-chuc-nang
+```
+
+*(Trước khi bắt đầu code mới, nên chạy `git pull origin main` để đồng bộ phiên bản mới nhất của cả nhóm.)*
+
+---
+
+## 👥 Thành Viên Thực Hiện — Nhóm 10
+
 - **Đồ án**: Đồ Án Chuyên Ngành Phần Mềm (ĐACNPM)
+- **Tài liệu đăng ký đề tài**: [dk_de_tai_nhom_10.docx](./dk_de_tai_nhom_10.docx)
+
+| STT | Mã Số Sinh Viên (MSSV) | Họ và Tên | GitHub |
+| :---: | :--- | :--- | :--- |
+| 1 | `075206003431` | **Nguyễn Đức Khải** | `khaind3431-svg` *(Nhóm trưởng)* |
+| 2 | `066206005759` | **Lê Như Hoàng** | `HoangLN714` |
+| 3 | `087206015150` | **Nguyễn Công Tấn** | `tannc5150-svg` |
+| 4 | `089206000099` | **Nguyễn Khắc Anh Tân** | *(Đang cập nhật)* |
+| 5 | `067206000218` | **Vương Đình Minh** | `minhlamcoder` |
