@@ -93,6 +93,13 @@ mvn spring-boot:run
 
 ---
 
+## 🗄️ Thiết Kế Cơ Sở Dữ Liệu (ERD & SQL)
+
+- **Sơ đồ ERD trực quan (Mermaid) & Đặc tả 8 bảng**: [docs/ERD_DATABASE.md](./docs/ERD_DATABASE.md)
+- **File SQL DDL chuẩn MySQL 8 (`titanfit_db`)**: [docs/titanfit_db_schema.sql](./docs/titanfit_db_schema.sql)
+
+---
+
 ## 🤝 Hướng Dẫn Làm Việc Nhóm (Git Workflow)
 
 > **Lưu ý:** Thành viên mới cần chấp nhận lời mời (**Accept invitation**) qua Email hoặc thông báo trên GitHub trước khi thực hiện `git push`.
