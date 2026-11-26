@@ -1,11 +1,6 @@
 # TitanFit Biometrics — Hệ Thống Quản Lý Hội Viên & Kiểm Soát Ra Vào Bằng Face ID
 
-> **Đề tài:** Xây dựng hệ thống quản lý hội viên & kiểm soát cổng tự động phòng gym bằng nhận diện khuôn mặt 16-D (Face ID).  
-> 📚 **BÁO CÁO THI GIỮA KỲ (Nhóm 10):** Xem toàn bộ tài liệu tại thư mục [thiGK/](./thiGK/) bao gồm:  
-> - [Phần 1: Kiến trúc hệ thống](./thiGK/1_Kien_Truc_He_Thong.md)  
-> - [Phần 2: Lược đồ Use Case](./thiGK/2_Luoc_Do_UseCase.md)  
-> - [Phần 3: Lược đồ Lớp (Class Diagram)](./thiGK/3_Luoc_Do_Lop.md)  
-> - [Báo Cáo Tổng Hợp](./thiGK/BAO_CAO_THI_GIUA_KY.md)
+> **Đề tài:** Xây dựng hệ thống quản lý hội viên & kiểm soát cổng tự động phòng gym bằng nhận diện khuôn mặt 16-D (Face ID).
 
 ---
 
